@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Small Win</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f5f7;
+    --card:#ffffff;
+    --line:#e3e5ea;
+    --ink:#1c1e26;
+    --muted:#7b7f8a;
+    --accent:#4f5dff;
+    --accent-ink:#ffffff;
+    --danger:#e2534a;
+    --danger-bg:#ffe3e1;
+    --warn:#a3760a;
+    --warn-bg:#fff3d6;
+    --done:#2fb673;
+    --done-bg:#e4f5ea;
+    --due-bg:#eef0ff;
+    --shadow:0 6px 20px rgba(20,20,40,0.06);
+    --cat-0-bg:#e0f7f5; --cat-0-ink:#0f766e;
+    --cat-1-bg:#fce7f3; --cat-1-ink:#be185d;
+    --cat-2-bg:#f3e8ff; --cat-2-ink:#7e22ce;
+    --cat-3-bg:#e0f2fe; --cat-3-ink:#0369a1;
+    --cat-4-bg:#ecfccb; --cat-4-ink:#4d7c0f;
+    --cat-5-bg:#e2e8f0; --cat-5-ink:#475569;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161c;
+      --card:#1e2029;
+      --line:#2c2e3a;
+      --ink:#f1f2f6;
+      --muted:#8b8fa3;
+      --accent:#6d78ff;
+      --accent-ink:#ffffff;
+      --danger:#ff8079;
+      --danger-bg:#3a2226;
+      --warn:#e0b356;
+      --warn-bg:#3a3020;
+      --done:#4fd394;
+      --done-bg:#1e3328;
+      --due-bg:#242745;
+      --shadow:0 6px 20px rgba(0,0,0,0.35);
+      --cat-0-bg:#123a37; --cat-0-ink:#5eead4;
+      --cat-1-bg:#3a1530; --cat-1-ink:#f9a8d4;
+      --cat-2-bg:#2e1a45; --cat-2-ink:#d8b4fe;
+      --cat-3-bg:#0c2e42; --cat-3-ink:#7dd3fc;
+      --cat-4-bg:#263a10; --cat-4-ink:#bef264;
+      --cat-5-bg:#2a3341; --cat-5-ink:#cbd5e1;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161c;
+    --card:#1e2029;
+    --line:#2c2e3a;
+    --ink:#f1f2f6;
+    --muted:#8b8fa3;
+    --accent:#6d78ff;
+    --accent-ink:#ffffff;
+    --danger:#ff8079;
+    --danger-bg:#3a2226;
+    --warn:#e0b356;
+    --warn-bg:#3a3020;
+    --done:#4fd394;
+    --done-bg:#1e3328;
+    --due-bg:#242745;
+    --shadow:0 6px 20px rgba(0,0,0,0.35);
+    --cat-0-bg:#123a37; --cat-0-ink:#5eead4;
+    --cat-1-bg:#3a1530; --cat-1-ink:#f9a8d4;
+    --cat-2-bg:#2e1a45; --cat-2-ink:#d8b4fe;
+    --cat-3-bg:#0c2e42; --cat-3-ink:#7dd3fc;
+    --cat-4-bg:#263a10; --cat-4-ink:#bef264;
+    --cat-5-bg:#2a3341; --cat-5-ink:#cbd5e1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:32px 18px 80px;}
+
+  header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  header h1{font-size:clamp(13px, 4.2vw, 17px);font-weight:800;margin:0 0 6px;letter-spacing:0.01em;white-space:nowrap;}
+  @media (max-width:420px){
+    header h1{white-space:normal;}
+  }
+  header p{margin:0;color:var(--muted);font-size:13.5px;}
+  .sync-badge{
+    font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;
+    padding:5px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .sync-badge.on{background:var(--done-bg);color:var(--done);}
+  .sync-badge.off{background:var(--warn-bg);color:var(--warn);}
+
+  .daily-brief{
+    position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 44px 14px 16px;margin-top:16px;box-shadow:var(--shadow);
+  }
+  .daily-brief[hidden]{display:none;}
+  .daily-brief-label{
+    font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--accent);
+    font-weight:800;margin-bottom:4px;
+  }
+  .daily-brief-text{font-size:13.5px;color:var(--ink);line-height:1.5;}
+  .daily-brief-refresh{
+    position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);
+    font-size:16px;cursor:pointer;padding:5px 7px;border-radius:8px;
+  }
+  .daily-brief-refresh:hover{color:var(--accent);background:var(--bg);}
+  .daily-brief-refresh:disabled{opacity:0.4;cursor:default;}
+
+  .stats{display:flex;gap:10px;margin:18px 0;}
+  .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);}
+  .stat .n{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-top:2px;}
+
+  .cat-progress-heading-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 8px;
+  }
+  .cat-progress-heading{
+    font-size:11.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);
+    font-weight:700;
+  }
+  .purge-link{
+    background:none;border:none;color:var(--danger);font-size:11.5px;font-weight:700;
+    cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;
+    white-space:nowrap;
+  }
+  .purge-link:hover{color:var(--ink);}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(15,17,23,0.5);
+    display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:20px;max-width:360px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  }
+  .modal h3{margin:0 0 8px;font-size:16px;font-weight:800;color:var(--ink);}
+  .modal p{margin:0 0 16px;font-size:13.5px;color:var(--muted);line-height:1.5;}
+  .modal input[type=date]{
+    width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font-size:14px;margin-bottom:16px;
+    font-family:inherit;color-scheme:light dark;
+  }
+  .modal-daterange{display:flex;gap:10px;}
+  .modal-daterange label{
+    flex:1;display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:0.03em;font-weight:700;
+  }
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+  .modal-actions button{
+    border:none;border-radius:10px;padding:10px 16px;font-size:13.5px;font-weight:700;cursor:pointer;
+  }
+  .modal-actions button.primary{background:var(--accent);color:var(--accent-ink);}
+  .modal-actions button.danger{background:var(--danger);color:#ffffff;}
+  .modal-actions button.secondary{background:var(--line);color:var(--ink);}
+  .cat-progress{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .cat-progress-card{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:12px 10px;box-shadow:var(--shadow);min-width:88px;
+  }
+  .cat-pie{
+    width:52px;height:52px;border-radius:50%;flex-shrink:0;
+    border:1px solid var(--line);
+  }
+  .cat-progress-name{
+    display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;
+    color:var(--ink);white-space:nowrap;
+  }
+  .cat-progress-frac{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .cat-dot.cat-0{background:var(--cat-0-bg);}
+  .cat-dot.cat-1{background:var(--cat-1-bg);}
+  .cat-dot.cat-2{background:var(--cat-2-bg);}
+  .cat-dot.cat-3{background:var(--cat-3-bg);}
+  .cat-dot.cat-4{background:var(--cat-4-bg);}
+  .cat-dot.cat-5{background:var(--cat-5-bg);}
+  .cat-dot.cat-personal{background:#ED9EB3;}
+  .cat-dot.cat-work{background:#63C8E9;}
+
+  form.add-form{
+    display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px;box-shadow:var(--shadow);
+  }
+  form.add-form input[type=text]{
+    flex:1;min-width:140px;padding:13px 14px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font-size:14.5px;font-family:inherit;
+  }
+  form.add-form input#categoryInput{flex:0 1 130px;}
+  form.add-form input[type=text]:focus-visible,
+  form.add-form select:focus-visible,
+  form.add-form input[type=date]:focus-visible,
+  form.add-form input[type=time]:focus-visible,
+  form.add-form button:focus-visible,
+  .filters button:focus-visible,
+  .filters select:focus-visible,
+  .check:focus-visible,
+  .del:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  form.add-form select, form.add-form input[type=date], form.add-form input[type=time]{
+    padding:13px 10px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font-size:13px;font-family:inherit;
+    color-scheme:light dark;
+  }
+  .due-group{display:flex;gap:8px;}
+  form.add-form input[type=date]{flex:0 1 140px;}
+  form.add-form input[type=time]{flex:0 1 110px;}
+  .calendar-check{
+    display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);
+    cursor:pointer;user-select:none;white-space:nowrap;padding:0 2px;
+  }
+  .calendar-check input[type=checkbox]{width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--accent);}
+  .edit-form .calendar-check{font-size:11.5px;}
+  form.add-form button{
+    background:var(--accent);color:var(--accent-ink);border:none;border-radius:10px;
+    padding:13px 18px;font-weight:700;font-size:14.5px;cursor:pointer;white-space:nowrap;
+  }
+  form.add-form button:active{transform:scale(0.98);}
+  form.add-form button#aiParseBtn{
+    background:var(--bg);color:var(--ink);border:1px solid var(--line);
+    padding:13px 14px;font-size:16px;line-height:1;
+  }
+  form.add-form button#aiParseBtn:hover{border-color:var(--accent);}
+  form.add-form button#aiParseBtn:disabled{opacity:0.5;cursor:default;}
+  form.add-form button#aiParseBtn[hidden]{display:none;}
+  form.add-form button#micBtn{
+    background:var(--bg);color:var(--ink);border:1px solid var(--line);
+    padding:13px 14px;font-size:16px;line-height:1;
+  }
+  form.add-form button#micBtn:hover{border-color:var(--accent);}
+  form.add-form button#micBtn[hidden]{display:none;}
+  form.add-form button#micBtn.listening{
+    background:var(--danger);color:#ffffff;border-color:var(--danger);
+    animation:mic-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes mic-pulse{
+    0%, 100%{box-shadow:0 0 0 0 rgba(226,83,74,0.45);}
+    50%{box-shadow:0 0 0 8px rgba(226,83,74,0);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    form.add-form button#micBtn.listening{animation:none;}
+  }
+
+  .filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  .filters button{
+    background:var(--card);border:1px solid var(--line);color:var(--muted);
+    padding:7px 14px;border-radius:999px;font-size:13px;cursor:pointer;font-weight:600;
+  }
+  .filters button.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+  .filters select{
+    background:var(--card);border:1px solid var(--line);color:var(--muted);
+    padding:7px 12px;border-radius:999px;font-size:13px;cursor:pointer;font-weight:600;
+    font-family:inherit;color-scheme:light dark;
+  }
+
+  ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  li.item{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;display:flex;align-items:flex-start;gap:12px;box-shadow:var(--shadow);
+  }
+  li.item.done{opacity:0.55;}
+  li.item.cat-bg-personal{background:#ED9EB3;border-color:#ED9EB3;}
+  li.item.cat-bg-personal .text{color:#4A0620;}
+  li.item.cat-bg-personal .check{border-color:#4A0620;color:#4A0620;}
+  li.item.cat-bg-personal .edit, li.item.cat-bg-personal .del{color:#4A0620;}
+  li.item.cat-bg-personal .edit:hover, li.item.cat-bg-personal .del:hover{color:#2c0313;}
+  li.item.cat-bg-work{background:#63C8E9;border-color:#63C8E9;}
+  li.item.cat-bg-work .text{color:#082E39;}
+  li.item.cat-bg-work .check{border-color:#082E39;color:#082E39;}
+  li.item.cat-bg-work .edit, li.item.cat-bg-work .del{color:#082E39;}
+  li.item.cat-bg-work .edit:hover, li.item.cat-bg-work .del:hover{color:#04181d;}
+  li.item.cat-bg-personal .tag:not(.cat-personal), li.item.cat-bg-work .tag:not(.cat-work){
+    background:rgba(255,255,255,0.55);
+  }
+  li.item.overdue-bg{background:#E5484D;border-color:#E5484D;}
+  li.item.overdue-bg .text{color:#ffffff;}
+  li.item.overdue-bg .check{border-color:#ffffff;color:#ffffff;}
+  li.item.overdue-bg .edit, li.item.overdue-bg .del{color:#ffffff;}
+  li.item.overdue-bg .edit:hover, li.item.overdue-bg .del:hover{color:#ffe1e1;}
+  li.item.overdue-bg .tag{background:rgba(255,255,255,0.28);color:#ffffff;}
+  li.item.overdue-bg .tag.due.overdue{background:rgba(255,255,255,0.4);color:#ffffff;}
+  .check{
+    width:22px;height:22px;border-radius:50%;border:2px solid var(--line);
+    flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    background:transparent;color:var(--ink);
+  }
+  li.item.done .check{background:var(--done);border-color:var(--done);color:#fff;font-size:12px;}
+  .body{flex:1;min-width:0;}
+  .text{font-size:14.5px;font-weight:500;word-break:break-word;}
+  li.item.done .text{text-decoration:line-through;}
+  .meta{display:flex;gap:8px;margin-top:5px;flex-wrap:wrap;}
+  .tag{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:700;}
+  .tag.p-high{background:var(--danger-bg);color:var(--danger);}
+  .tag.p-medium{background:var(--warn-bg);color:var(--warn);}
+  .tag.p-low{background:var(--done-bg);color:var(--done);}
+  .tag.due{background:var(--due-bg);color:var(--accent);}
+  .tag.due.overdue{background:var(--danger-bg);color:var(--danger);}
+  .tag.completed{background:var(--done-bg);color:var(--done);}
+  .tag.cat-0{background:var(--cat-0-bg);color:var(--cat-0-ink);}
+  .tag.cat-1{background:var(--cat-1-bg);color:var(--cat-1-ink);}
+  .tag.cat-2{background:var(--cat-2-bg);color:var(--cat-2-ink);}
+  .tag.cat-3{background:var(--cat-3-bg);color:var(--cat-3-ink);}
+  .tag.cat-4{background:var(--cat-4-bg);color:var(--cat-4-ink);}
+  .tag.cat-5{background:var(--cat-5-bg);color:var(--cat-5-ink);}
+  .tag.cat-personal{background:#ED9EB3;color:#7A0B32;}
+  .tag.cat-work{background:#63C8E9;color:#0B4A5C;}
+  .actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+  .del, .edit{
+    background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;
+    padding:2px 4px;line-height:1;
+  }
+  .del{font-size:18px;}
+  .del:hover{color:var(--danger);}
+  .edit:hover{color:var(--accent);}
+
+  .edit-form{display:flex;gap:8px;flex-wrap:wrap;flex:1;}
+  .edit-form input[type=text]{
+    flex:1;min-width:120px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font-size:14px;font-family:inherit;
+  }
+  .edit-form input#editCategoryInput{flex:0 1 110px;}
+  .edit-form select, .edit-form input[type=date], .edit-form input[type=time]{
+    padding:9px 8px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font-size:12.5px;font-family:inherit;color-scheme:light dark;
+  }
+  .edit-form input[type=date]{flex:0 1 130px;}
+  .edit-form input[type=time]{flex:0 1 100px;}
+  .edit-form .edit-actions{display:flex;gap:6px;width:100%;margin-top:2px;}
+  .edit-form button{
+    border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;
+  }
+  .edit-form button.save{background:var(--accent);color:var(--accent-ink);}
+  .edit-form button.cancel{background:var(--line);color:var(--ink);}
+
+  .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:14px;}
+
+  .view-switch{display:flex;gap:6px;margin-bottom:14px;}
+  .view-switch button{
+    background:var(--card);border:1px solid var(--line);color:var(--muted);
+    padding:7px 16px;border-radius:999px;font-size:13px;cursor:pointer;font-weight:600;
+  }
+  .view-switch button.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+  .cal-nav .range{font-weight:800;font-size:15px;}
+  .cal-nav-btns{display:flex;gap:6px;}
+  .cal-nav-btns button{
+    background:var(--card);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:600;
+  }
+  .cal-grid-wrap{overflow-x:auto;padding-bottom:4px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr));gap:8px;min-width:820px;}
+  .cal-day{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:8px;display:flex;flex-direction:column;gap:6px;min-height:130px;
+  }
+  .cal-day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+  .cal-day-head{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.03em;}
+  .cal-day-head .num{font-size:16px;color:var(--ink);font-weight:800;margin-left:4px;letter-spacing:0;}
+  .cal-day.today .cal-day-head, .cal-day.today .cal-day-head .num{color:var(--accent);}
+  .cal-tasks{display:flex;flex-direction:column;gap:5px;flex:1;}
+  .cal-task{
+    display:flex;align-items:flex-start;gap:5px;font-size:11.5px;padding:5px 6px;
+    border-radius:6px;background:var(--bg);line-height:1.3;
+  }
+  .cal-task.done{opacity:0.5;}
+  .cal-task.done .cal-text{text-decoration:line-through;}
+  .cal-task.cat-bg-personal{background:#ED9EB3;color:#4A0620;}
+  .cal-task.cat-bg-work{background:#63C8E9;color:#082E39;}
+  .cal-task.overdue-bg{background:#E5484D;color:#ffffff;}
+  .cal-check{
+    width:14px;height:14px;border-radius:50%;border:2px solid var(--line);
+    flex-shrink:0;margin-top:1px;cursor:pointer;background:transparent;padding:0;
+  }
+  .cal-task.done .cal-check{background:var(--done);border-color:var(--done);}
+  .cal-task.cat-bg-personal .cal-check{border-color:#4A0620;}
+  .cal-task.cat-bg-work .cal-check{border-color:#082E39;}
+  .cal-task.overdue-bg .cal-check{border-color:#ffffff;}
+  .cal-text{flex:1;word-break:break-word;cursor:default;}
+  .cal-del{background:none;border:none;color:inherit;opacity:0.6;font-size:11px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;}
+  .cal-del:hover{opacity:1;}
+  .cal-empty{font-size:11px;color:var(--muted);text-align:center;padding:14px 0;}
+
+  .cal-nodate{margin-top:16px;}
+  .cal-nodate h3{font-size:11.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);margin:0 0 8px;font-weight:700;}
+  .cal-nodate .cal-tasks{flex-direction:row;flex-wrap:wrap;}
+  .cal-nodate .cal-task{flex:0 1 auto;max-width:220px;}
+
+  .report-header{margin-bottom:14px;}
+  .report-header h2{font-size:18px;font-weight:800;margin:0 0 4px;}
+  .report-range{font-size:12.5px;color:var(--muted);}
+  .report-controls{
+    display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);
+  }
+  .report-controls label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.03em;font-weight:700;}
+  .report-controls input[type=date]{
+    padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);
+    font-size:13px;font-family:inherit;color-scheme:light dark;
+  }
+  .report-controls button{
+    background:var(--accent);color:var(--accent-ink);border:none;border-radius:10px;
+    padding:11px 16px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;
+  }
+  .report-controls button#reportSummarizeBtn{
+    background:var(--bg);color:var(--ink);border:1px solid var(--line);
+  }
+  .report-controls button#reportSummarizeBtn:hover{border-color:var(--accent);}
+  .report-controls button#reportSummarizeBtn:disabled{opacity:0.6;cursor:default;}
+  .report-controls button#reportSummarizeBtn[hidden]{display:none;}
+  .summary-text{white-space:pre-line;}
+  .report-cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+  .report-cat-filter button{
+    display:flex;align-items:center;gap:6px;
+    background:var(--card);border:1px solid var(--line);color:var(--muted);
+    padding:7px 14px;border-radius:999px;font-size:13px;cursor:pointer;font-weight:600;
+    opacity:0.55;
+  }
+  .report-cat-filter button.active{background:var(--ink);color:var(--bg);border-color:var(--ink);opacity:1;}
+  .report-cat-filter button.active .cat-dot{outline:2px solid var(--bg);outline-offset:-1px;}
+  .report-cat-filter button.reset{
+    background:none;border:none;color:var(--accent);opacity:1;padding:7px 4px;font-weight:700;
+    text-decoration:underline;text-underline-offset:2px;
+  }
+  .report-section{margin-bottom:22px;}
+  .report-section h3{
+    display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;margin:0 0 8px;color:var(--ink);
+  }
+  .report-table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);}
+  table.report-table{width:100%;border-collapse:collapse;font-size:13px;min-width:420px;}
+  table.report-table th{
+    text-align:left;padding:10px 12px;border-bottom:2px solid var(--line);
+    color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:0.03em;font-weight:700;
+    white-space:nowrap;
+  }
+  table.report-table td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--ink);}
+  table.report-table tr:last-child td{border-bottom:none;}
+  table.report-table td:first-child, table.report-table th:first-child{white-space:nowrap;font-variant-numeric:tabular-nums;}
+
+  @media print{
+    .wrap > *:not(#reportView){display:none !important;}
+    #reportView{display:block !important;}
+    .report-controls{display:none !important;}
+    .report-cat-filter{display:none !important;}
+    .modal-overlay{display:none !important;}
+    body{background:#fff;}
+    table.report-table{font-size:11px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    form.add-form button, .check{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>AND IT ALL BEGAN WITH ONE SMALL WIN</h1>
+      <p>Access your tasks from any device when online</p>
+    </div>
+    <span class="sync-badge off" id="syncBadge">Local only</span>
+  </header>
+
+  <div class="daily-brief" id="dailyBrief" hidden>
+    <div class="daily-brief-label">✨ Daily Brief</div>
+    <div class="daily-brief-text" id="dailyBriefText">Preparing your daily brief…</div>
+    <button type="button" id="dailyBriefRefresh" class="daily-brief-refresh" aria-label="Refresh daily brief" title="Refresh">↻</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Total</div></div>
+    <div class="stat"><div class="n" id="statActive">0</div><div class="l">Pending</div></div>
+    <div class="stat"><div class="n" id="statDone">0</div><div class="l">Complete</div></div>
+  </div>
+
+  <div class="cat-progress-heading-row">
+    <div class="cat-progress-heading">Progress by Category</div>
+    <button type="button" id="purgeBtn" class="purge-link">Purge Old Data</button>
+  </div>
+  <div class="cat-progress" id="catProgress"></div>
+
+  <form class="add-form" id="addForm">
+    <input type="text" id="taskInput" placeholder="Add new to-do, or type naturally: &quot;pay condo fee tomorrow, urgent&quot;" autocomplete="off" required>
+    <button type="button" id="micBtn" title="Add by voice" hidden>🎤</button>
+    <input type="text" id="categoryInput" list="categoryList" placeholder="Category" autocomplete="off">
+    <datalist id="categoryList"></datalist>
+    <select id="priorityInput" aria-label="Priority">
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+      <option value="low">Low</option>
+    </select>
+    <div class="due-group">
+      <input type="date" id="dueDateInput" aria-label="Due date">
+      <input type="time" id="dueTimeInput" aria-label="Due time">
+    </div>
+    <label class="calendar-check" title="Save this task as an iPhone Calendar event when you click Add">
+      <input type="checkbox" id="addToCalendarInput">
+      <span>📅 Add to Calendar</span>
+    </label>
+    <button type="button" id="aiParseBtn" title="AI Quick Add — let AI fill category, priority, and date" hidden>✨</button>
+    <button type="submit">Add</button>
+  </form>
+
+  <div class="filters">
+    <button data-filter="all">Total</button>
+    <button data-filter="active" class="active">Pending</button>
+    <button data-filter="done">Complete</button>
+    <select id="categoryFilterSelect">
+      <option value="all">All Categories</option>
+    </select>
+  </div>
+
+  <div class="view-switch">
+    <button type="button" class="active" data-view="list">List</button>
+    <button type="button" data-view="week">Week</button>
+    <button type="button" data-view="report">Report</button>
+  </div>
+
+  <ul class="list" id="list"></ul>
+  <div class="empty" id="emptyMsg" style="display:none;">No tasks yet — add your first one above</div>
+
+  <div class="calendar" id="calendarView" hidden>
+    <div class="cal-nav">
+      <div class="range" id="weekRangeLabel"></div>
+      <div class="cal-nav-btns">
+        <button type="button" id="calPrev" aria-label="Previous week">‹ Prev</button>
+        <button type="button" id="calToday">This Week</button>
+        <button type="button" id="calNext" aria-label="Next week">Next ›</button>
+      </div>
+    </div>
+    <div class="cal-grid-wrap">
+      <div class="cal-grid" id="calendarGrid"></div>
+    </div>
+    <div class="cal-nodate" id="calNoDate">
+      <h3>No due date</h3>
+      <div class="cal-tasks" id="calNoDateTasks"></div>
+    </div>
+  </div>
+
+  <div class="report" id="reportView" hidden>
+    <div class="report-header">
+      <h2>Completed Tasks Report</h2>
+      <div class="report-range" id="reportRangeLabel"></div>
+    </div>
+    <div class="report-controls">
+      <label>From
+        <input type="date" id="reportFrom">
+      </label>
+      <label>To
+        <input type="date" id="reportTo">
+      </label>
+      <button type="button" id="reportSummarizeBtn" hidden>✨ Summarize</button>
+      <button type="button" id="reportExportBtn">Export PDF</button>
+    </div>
+    <div class="report-cat-filter" id="reportCatFilter"></div>
+    <div id="reportBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'todo-list-items-v1';
+  const DEFAULT_CATEGORY = 'General';
+
+  let items = [];
+  let filter = 'active';
+  let categoryFilter = 'all';
+  let dbMode = false;
+  let db = null;
+  let sampleFn = null;
+  let downloadsFn = null;
+  let jsPdfLoadPromise = null;
+  let editingId = null;
+  let viewMode = 'list';
+  let weekStart = startOfWeek(new Date());
+  let reportExcludedCats = new Set();
+
+  function uid(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  }
+
+  function todayStr(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function nowTimeStr(){
+    const d = new Date();
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function priorityLabel(p){
+    return {high:'High', medium:'Medium', low:'Low'}[p] || p;
+  }
+
+  // ---- Add to iPhone/Apple Calendar (generates a .ics VEVENT) ----
+  function pad2(n){ return String(n).padStart(2, '0'); }
+
+  function icsEscape(text){
+    return String(text)
+      .replace(/\\/g, '\\\\')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,')
+      .replace(/\n/g, '\\n');
+  }
+
+  function icsUtcStamp(){
+    const d = new Date();
+    return d.getUTCFullYear() + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate()) + 'T'
+      + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + pad2(d.getUTCSeconds()) + 'Z';
+  }
+
+  function buildIcsForTask(task){
+    const dueDate = task.dueDate || todayStr();
+    const [y, mo, da] = dueDate.split('-').map(Number);
+    let dtStartLine, dtEndLine;
+
+    if(task.dueTime){
+      const [h, mi] = task.dueTime.split(':').map(Number);
+      const start = new Date(y, mo - 1, da, h, mi);
+      const end = new Date(start.getTime() + 60 * 60 * 1000); // default 1-hour block
+      const fmt = d => d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate())
+        + 'T' + pad2(d.getHours()) + pad2(d.getMinutes()) + '00';
+      dtStartLine = 'DTSTART:' + fmt(start);
+      dtEndLine = 'DTEND:' + fmt(end);
+    } else {
+      // No time specified -> all-day event (end date is exclusive per iCalendar spec)
+      const start = new Date(y, mo - 1, da);
+      const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+      const fmtDate = d => d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
+      dtStartLine = 'DTSTART;VALUE=DATE:' + fmtDate(start);
+      dtEndLine = 'DTEND;VALUE=DATE:' + fmtDate(end);
+    }
+
+    const descParts = [];
+    if(task.category) descParts.push('Category: ' + task.category);
+    if(task.priority) descParts.push('Priority: ' + priorityLabel(task.priority));
+
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//One Small Win//To-Do List//EN',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      'UID:' + uid() + '@one-small-win',
+      'DTSTAMP:' + icsUtcStamp(),
+      dtStartLine,
+      dtEndLine,
+      'SUMMARY:' + icsEscape(task.text)
+    ];
+    if(descParts.length) lines.push('DESCRIPTION:' + icsEscape(descParts.join(' | ')));
+    lines.push('END:VEVENT', 'END:VCALENDAR');
+    return lines.join('\r\n');
+  }
+
+  function triggerAddToCalendar(task){
+    try{
+      const ics = buildIcsForTask(task);
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }catch(e){
+      console.error('Add to calendar failed', e);
+    }
+  }
+
+  function catColorIndex(name){
+    let h = 0;
+    for(let i = 0; i < name.length; i++){ h = (h * 31 + name.charCodeAt(i)) >>> 0; }
+    return h % 6;
+  }
+
+  function categoryTagClass(name){
+    const key = (name || '').trim().toLowerCase();
+    if(key === 'personal') return 'cat-personal';
+    if(key === 'work') return 'cat-work';
+    return 'cat-' + catColorIndex(name);
+  }
+
+  function categoryCardClass(name){
+    const key = (name || '').trim().toLowerCase();
+    if(key === 'personal') return 'cat-bg-personal';
+    if(key === 'work') return 'cat-bg-work';
+    return '';
+  }
+
+  function isOverdue(it){
+    if(it.done || !it.dueDate) return false;
+    const today = todayStr();
+    if(it.dueDate < today) return true;
+    if(it.dueDate > today) return false;
+    if(!it.dueTime) return false;
+    return it.dueTime < nowTimeStr();
+  }
+
+  function formatCompleted(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
+      + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function compareItems(a, b){
+    const catCmp = (a.category || '').localeCompare(b.category || '');
+    if(catCmp) return catCmp;
+    const ad = a.dueDate || '9999-12-31';
+    const bd = b.dueDate || '9999-12-31';
+    if(ad !== bd) return ad < bd ? -1 : 1;
+    const at = a.dueTime || '99:99';
+    const bt = b.dueTime || '99:99';
+    if(at !== bt) return at < bt ? -1 : 1;
+    return 0;
+  }
+
+  function allCategories(){
+    return Array.from(new Set(items.map(it => it.category))).sort((a, b) => a.localeCompare(b));
+  }
+
+  function renderCategoryOptions(){
+    const cats = allCategories();
+
+    const datalist = document.getElementById('categoryList');
+    datalist.innerHTML = '';
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      datalist.appendChild(opt);
+    });
+
+    const select = document.getElementById('categoryFilterSelect');
+    const prevValue = select.value;
+    select.innerHTML = '<option value="all">All Categories</option>';
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      select.appendChild(opt);
+    });
+    select.value = cats.includes(prevValue) ? prevValue : 'all';
+    categoryFilter = select.value;
+  }
+
+  function render(){
+    renderCategoryOptions();
+    updateStats();
+    renderCategoryProgress();
+
+    const listEl = document.getElementById('list');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const calendarView = document.getElementById('calendarView');
+    const reportView = document.getElementById('reportView');
+
+    listEl.style.display = 'none';
+    emptyMsg.style.display = 'none';
+    calendarView.hidden = true;
+    reportView.hidden = true;
+
+    if(viewMode === 'week'){
+      calendarView.hidden = false;
+      renderCalendar();
+    } else if(viewMode === 'report'){
+      reportView.hidden = false;
+      renderReport();
+    } else {
+      listEl.style.display = '';
+      renderList();
+    }
+  }
+
+  function updateStats(){
+    document.getElementById('statTotal').textContent = items.length;
+    document.getElementById('statActive').textContent = items.filter(it => !it.done).length;
+    document.getElementById('statDone').textContent = items.filter(it => it.done).length;
+  }
+
+  function renderCategoryProgress(){
+    const wrap = document.getElementById('catProgress');
+    wrap.innerHTML = '';
+
+    const cats = allCategories();
+    cats.forEach(cat => {
+      const catItems = items.filter(it => it.category === cat);
+      const total = catItems.length;
+      const done = catItems.filter(it => it.done).length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+
+      const card = document.createElement('div');
+      card.className = 'cat-progress-card';
+
+      const pie = document.createElement('div');
+      pie.className = 'cat-pie';
+      pie.style.background = total
+        ? 'conic-gradient(var(--done) 0% ' + pct + '%, var(--line) ' + pct + '% 100%)'
+        : 'var(--line)';
+      pie.setAttribute('role', 'img');
+      pie.setAttribute('aria-label', cat + ': ' + done + ' of ' + total + ' complete (' + pct + '%)');
+
+      const name = document.createElement('div');
+      name.className = 'cat-progress-name';
+      const dot = document.createElement('span');
+      dot.className = 'cat-dot ' + categoryTagClass(cat);
+      name.appendChild(dot);
+      name.appendChild(document.createTextNode(cat));
+
+      const frac = document.createElement('div');
+      frac.className = 'cat-progress-frac';
+      frac.textContent = done + ' / ' + total + ' · ' + pct + '%';
+
+      card.appendChild(pie);
+      card.appendChild(name);
+      card.appendChild(frac);
+      wrap.appendChild(card);
+    });
+  }
+
+  function visibleItems(){
+    return items.filter(it => {
+      if(filter === 'active' && it.done) return false;
+      if(filter === 'done' && !it.done) return false;
+      if(categoryFilter !== 'all' && it.category !== categoryFilter) return false;
+      return true;
+    }).sort(compareItems);
+  }
+
+  function renderList(){
+    const list = document.getElementById('list');
+    const emptyMsg = document.getElementById('emptyMsg');
+    list.innerHTML = '';
+
+    const visible = visibleItems();
+    emptyMsg.style.display = visible.length ? 'none' : 'block';
+
+    visible.forEach(it => {
+      const li = document.createElement('li');
+      const catCardClass = categoryCardClass(it.category);
+      const overdue = isOverdue(it);
+      const cardClass = overdue ? 'overdue-bg' : catCardClass;
+      li.className = 'item' + (it.done ? ' done' : '') + (cardClass ? ' ' + cardClass : '');
+
+      if(it.id === editingId){
+        li.appendChild(buildEditForm(it));
+        list.appendChild(li);
+        return;
+      }
+
+      const check = document.createElement('button');
+      check.className = 'check';
+      check.type = 'button';
+      check.setAttribute('aria-label', it.done ? 'Mark incomplete' : 'Mark complete');
+      check.textContent = it.done ? '✓' : '';
+      check.addEventListener('click', () => toggleDone(it.id));
+
+      const body = document.createElement('div');
+      body.className = 'body';
+
+      const text = document.createElement('div');
+      text.className = 'text';
+      text.textContent = it.text;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+
+      if(!catCardClass || overdue){
+        const cTag = document.createElement('span');
+        cTag.className = 'tag ' + categoryTagClass(it.category);
+        cTag.textContent = it.category;
+        meta.appendChild(cTag);
+      }
+
+      const pTag = document.createElement('span');
+      pTag.className = 'tag p-' + it.priority;
+      pTag.textContent = priorityLabel(it.priority);
+      meta.appendChild(pTag);
+
+      if(it.dueDate){
+        const dTag = document.createElement('span');
+        dTag.className = 'tag due' + (overdue ? ' overdue' : '');
+        dTag.textContent = it.dueDate + (it.dueTime ? ' ' + it.dueTime : '');
+        meta.appendChild(dTag);
+      }
+
+      if(it.done && it.completedAt){
+        const doneTag = document.createElement('span');
+        doneTag.className = 'tag completed';
+        doneTag.textContent = 'Completed ' + formatCompleted(it.completedAt);
+        meta.appendChild(doneTag);
+      }
+
+      body.appendChild(text);
+      body.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'edit';
+      editBtn.type = 'button';
+      editBtn.setAttribute('aria-label', 'Edit task');
+      editBtn.textContent = '✎';
+      editBtn.addEventListener('click', () => { editingId = it.id; render(); });
+
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.type = 'button';
+      del.setAttribute('aria-label', 'Delete task');
+      del.textContent = '✕';
+      del.addEventListener('click', () => confirmDelete(it.id));
+
+      actions.appendChild(editBtn);
+      actions.appendChild(del);
+
+      li.appendChild(check);
+      li.appendChild(body);
+      li.appendChild(actions);
+      list.appendChild(li);
+    });
+  }
+
+  function startOfWeek(d){
+    const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    date.setDate(date.getDate() - date.getDay());
+    return date;
+  }
+
+  function fmtDateStr(d){
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function formatWeekRange(start, end){
+    const opts = { month: 'short', day: 'numeric' };
+    const startStr = start.toLocaleDateString('en-US', opts);
+    const endStr = end.toLocaleDateString('en-US', start.getFullYear() === end.getFullYear() ? opts : Object.assign({ year: 'numeric' }, opts));
+    return startStr + ' – ' + endStr + ', ' + end.getFullYear();
+  }
+
+  function buildCalTask(it){
+    const row = document.createElement('div');
+    const cardClass = isOverdue(it) ? 'overdue-bg' : categoryCardClass(it.category);
+    row.className = 'cal-task' + (it.done ? ' done' : '') + (cardClass ? ' ' + cardClass : '');
+
+    const check = document.createElement('button');
+    check.className = 'cal-check';
+    check.type = 'button';
+    check.setAttribute('aria-label', it.done ? 'Mark incomplete' : 'Mark complete');
+    check.addEventListener('click', () => toggleDone(it.id));
+
+    const text = document.createElement('span');
+    text.className = 'cal-text';
+    text.textContent = it.text + (it.dueTime ? ' · ' + it.dueTime : '');
+
+    const del = document.createElement('button');
+    del.className = 'cal-del';
+    del.type = 'button';
+    del.setAttribute('aria-label', 'Delete task');
+    del.textContent = '✕';
+    del.addEventListener('click', () => confirmDelete(it.id));
+
+    row.appendChild(check);
+    row.appendChild(text);
+    row.appendChild(del);
+    return row;
+  }
+
+  function renderCalendar(){
+    const visible = visibleItems();
+
+    const days = [];
+    for(let i = 0; i < 7; i++){
+      const d = new Date(weekStart);
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
+
+    document.getElementById('weekRangeLabel').textContent = formatWeekRange(days[0], days[6]);
+
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    const todayNow = todayStr();
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    days.forEach(d => {
+      const dateStr = fmtDateStr(d);
+      const col = document.createElement('div');
+      col.className = 'cal-day' + (dateStr === todayNow ? ' today' : '');
+
+      const head = document.createElement('div');
+      head.className = 'cal-day-head';
+      head.innerHTML = dayNames[d.getDay()] + ' <span class="num">' + d.getDate() + '</span>';
+      col.appendChild(head);
+
+      const tasksWrap = document.createElement('div');
+      tasksWrap.className = 'cal-tasks';
+
+      const dayItems = visible.filter(it => it.dueDate === dateStr).sort(compareItems);
+      if(dayItems.length){
+        dayItems.forEach(it => tasksWrap.appendChild(buildCalTask(it)));
+      } else {
+        const empty = document.createElement('div');
+        empty.className = 'cal-empty';
+        empty.textContent = '—';
+        tasksWrap.appendChild(empty);
+      }
+      col.appendChild(tasksWrap);
+      grid.appendChild(col);
+    });
+
+    const noDateWrap = document.getElementById('calNoDateTasks');
+    noDateWrap.innerHTML = '';
+    const noDateItems = visible.filter(it => !it.dueDate);
+    document.getElementById('calNoDate').style.display = noDateItems.length ? '' : 'none';
+    noDateItems.forEach(it => noDateWrap.appendChild(buildCalTask(it)));
+  }
+
+  function formatReportDate(dateStr){
+    if(!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function buildPrintableReportHtml(){
+    const rangeText = document.getElementById('reportRangeLabel').textContent;
+    const bodyHtml = document.getElementById('reportBody').innerHTML;
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Completed Tasks Report</title><style>' +
+      'body{font-family:Arial,Helvetica,sans-serif;color:#1c1e26;margin:28px;background:#fff;}' +
+      'h1{font-size:20px;margin:0 0 4px;}' +
+      '.report-range{font-size:13px;color:#6b7280;margin-bottom:22px;}' +
+      '.report-section{margin-bottom:26px;}' +
+      '.report-section h3{display:flex;align-items:center;gap:6px;font-size:14px;margin:0 0 8px;}' +
+      '.cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#9ca3af;}' +
+      '.report-table-wrap{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}' +
+      'table.report-table{width:100%;border-collapse:collapse;font-size:12px;}' +
+      'table.report-table th{text-align:left;padding:8px 10px;border-bottom:2px solid #e5e7eb;color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:0.03em;}' +
+      'table.report-table td{padding:7px 10px;border-bottom:1px solid #eee;}' +
+      'table.report-table tr:last-child td{border-bottom:none;}' +
+      '@media print{ body{margin:12px;} }' +
+      '</style></head><body>' +
+      '<h1>Completed Tasks Report</h1>' +
+      '<div class="report-range">' + rangeText.replace(/</g, '&lt;') + '</div>' +
+      bodyHtml +
+      '</body></html>';
+  }
+
+  function ensureJsPDFLoaded(){
+    if(window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
+    if(jsPdfLoadPromise) return jsPdfLoadPromise;
+    jsPdfLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => { jsPdfLoadPromise = null; reject(new Error('Failed to load PDF library')); };
+      document.head.appendChild(script);
+    });
+    return jsPdfLoadPromise;
+  }
+
+  function reportRowsForExport(){
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+    const inRange = items.filter(it => {
+      if(!it.done || !it.completedAt) return false;
+      const d = it.completedAt.slice(0, 10);
+      if(from && d < from) return false;
+      if(to && d > to) return false;
+      return true;
+    });
+    return inRange.filter(it => !reportExcludedCats.has(it.category));
+  }
+
+  const DAILY_BRIEF_KEY = 'todo-daily-brief-v1';
+
+  function loadDailyBriefCache(){
+    try{
+      const raw = localStorage.getItem(DAILY_BRIEF_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+
+  function saveDailyBriefCache(text){
+    try{ localStorage.setItem(DAILY_BRIEF_KEY, JSON.stringify({ date: todayStr(), text: text })); }catch(e){}
+  }
+
+  function gatherDailyBriefStats(){
+    const today = todayStr();
+    const dueToday = items.filter(it => !it.done && it.dueDate === today);
+    const overdue = items.filter(it => isOverdue(it));
+    const completedToday = items.filter(it => it.done && it.completedAt && it.completedAt.slice(0, 10) === today);
+
+    return {
+      today: today,
+      pendingTotal: items.filter(it => !it.done).length,
+      dueTodayCount: dueToday.length,
+      dueTodayTitles: dueToday.slice(0, 10).map(it => it.text),
+      overdueCount: overdue.length,
+      overdueTitles: overdue.slice(0, 10).map(it => it.text),
+      completedTodayCount: completedToday.length,
+      completedTodayTitles: completedToday.slice(0, 10).map(it => it.text)
+    };
+  }
+
+  function buildDailyBriefPrompt(stats){
+    return 'You are writing a short daily to-do brief for the app owner, for today (' + stats.today + '). ' +
+      'Use ONLY these exact numbers (already computed correctly — never recompute or invent new ones):\n\n' +
+      JSON.stringify(stats, null, 2) + '\n\n' +
+      'Write 1-3 sentences, warm and encouraging but concise: mention what\'s due today, any overdue items needing attention (if overdueCount > 0), ' +
+      'and what has already been completed today (if completedTodayCount > 0). If dueTodayCount, overdueCount, and completedTodayCount are all 0, ' +
+      'write something brief and pleasant instead (e.g. a light, free day) rather than forcing these points in. ' +
+      'Respond in the same language as the task titles listed (Thai if mostly Thai, English otherwise); default to English if there are no titles at all. ' +
+      'No markdown, no bullet points, just plain prose.';
+  }
+
+  async function generateDailyBrief(force){
+    if(!sampleFn) return;
+    const textEl = document.getElementById('dailyBriefText');
+    const refreshBtn = document.getElementById('dailyBriefRefresh');
+
+    if(!force){
+      const cached = loadDailyBriefCache();
+      if(cached && cached.date === todayStr()){
+        textEl.textContent = cached.text;
+        return;
+      }
+    }
+
+    textEl.textContent = 'Preparing your daily brief…';
+    refreshBtn.disabled = true;
+    try{
+      const stats = gatherDailyBriefStats();
+      const result = await sampleFn(buildDailyBriefPrompt(stats), { modelTier: 'quick' });
+      textEl.textContent = result.text;
+      saveDailyBriefCache(result.text);
+    }catch(e){
+      console.error('Daily brief failed', e);
+      if(e && e.code === 'not_granted'){
+        document.getElementById('dailyBrief').hidden = true;
+      } else {
+        textEl.textContent = 'Couldn’t generate today’s brief right now.';
+      }
+    }finally{
+      refreshBtn.disabled = false;
+    }
+  }
+
+  function gatherSummaryStats(){
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+    const completed = reportRowsForExport();
+
+    // "Planned in this period": any task (done or not) with a due date
+    // inside the same range and a category the viewer hasn't excluded —
+    // gives a real planned-vs-completed ratio using existing fields,
+    // rather than a number the model would have to invent.
+    const planned = items.filter(it => {
+      if(!it.dueDate) return false;
+      if(from && it.dueDate < from) return false;
+      if(to && it.dueDate > to) return false;
+      if(reportExcludedCats.has(it.category)) return false;
+      return true;
+    });
+
+    const priorityCounts = { high: 0, medium: 0, low: 0 };
+    completed.forEach(it => { priorityCounts[it.priority] = (priorityCounts[it.priority] || 0) + 1; });
+
+    const categoryCounts = {};
+    completed.forEach(it => { categoryCounts[it.category] = (categoryCounts[it.category] || 0) + 1; });
+
+    const latenessDays = [];
+    completed.forEach(it => {
+      if(!it.dueDate) return;
+      const due = new Date(it.dueDate + 'T' + (it.dueTime || '23:59') + ':00');
+      const done = new Date(it.completedAt);
+      if(isNaN(due.getTime()) || isNaN(done.getTime())) return;
+      latenessDays.push((done - due) / 86400000);
+    });
+    const avgLatenessDays = latenessDays.length
+      ? Math.round((latenessDays.reduce((a, b) => a + b, 0) / latenessDays.length) * 10) / 10
+      : null;
+
+    return {
+      dateRangeLabel: document.getElementById('reportRangeLabel').textContent,
+      totalCompleted: completed.length,
+      plannedInRange: planned.length,
+      completedOfPlanned: planned.filter(it => it.done).length,
+      priorityCounts,
+      categoryCounts,
+      avgDaysLateWhenCompleted: avgLatenessDays,
+      taskTitles: completed.slice(0, 40).map(it => it.text)
+    };
+  }
+
+  function buildSummaryPrompt(stats){
+    return 'You are summarizing a personal to-do list report for its owner. ' +
+      'Here is aggregate data (already computed correctly — use these exact numbers, never recompute or invent new ones):\n\n' +
+      JSON.stringify(stats, null, 2) + '\n\n' +
+      'Write a short summary, 2-4 sentences, in a natural human tone (like a friendly weekly recap, not a data dump). ' +
+      'Mention: how many tasks were completed (and out of how many were planned in this period, if that number is meaningful), ' +
+      'the priority mix if it stands out, and whether tasks tended to finish early/on time/late (avgDaysLateWhenCompleted: positive = late, negative = early, null = not enough data — omit this point if null). ' +
+      'Respond in the same language as the task titles listed (Thai if they are mostly Thai, English otherwise). ' +
+      'No markdown, no bullet points, just plain prose.';
+  }
+
+  function wrapCanvasText(ctx, text, maxWidth){
+    const words = String(text).split(/\s+/).filter(Boolean);
+    const lines = [];
+    let cur = '';
+    words.forEach(w => {
+      const test = cur ? cur + ' ' + w : w;
+      if(cur && ctx.measureText(test).width > maxWidth){
+        lines.push(cur);
+        cur = w;
+      } else {
+        cur = test;
+      }
+    });
+    lines.push(cur);
+    return lines.length ? lines : [''];
+  }
+
+  function renderReportPages(){
+    // Render report pages onto <canvas> using the browser's own text
+    // engine (so Thai and any other script the page can already display
+    // renders correctly) instead of jsPDF's built-in fonts, which only
+    // cover Latin text and silently mangle anything else.
+    const scale = 2;
+    const pagePtW = 595, pagePtH = 842;
+    const pageW = pagePtW * scale, pageH = pagePtH * scale;
+    const marginPx = 40 * scale;
+    const contentBottom = pageH - 40 * scale;
+    const fontStack = '"Segoe UI", Tahoma, Arial, sans-serif';
+
+    const completed = reportRowsForExport();
+    const cats = Array.from(new Set(completed.map(it => it.category))).sort((a, b) => a.localeCompare(b));
+
+    const pages = [];
+    let canvas, ctx, y;
+
+    function freshCanvas(){
+      const c = document.createElement('canvas');
+      c.width = pageW;
+      c.height = pageH;
+      const c2 = c.getContext('2d');
+      c2.fillStyle = '#ffffff';
+      c2.fillRect(0, 0, pageW, pageH);
+      c2.fillStyle = '#141414';
+      c2.textBaseline = 'alphabetic';
+      return { c, c2 };
+    }
+
+    function newPage(){
+      if(canvas) pages.push(canvas);
+      const fresh = freshCanvas();
+      canvas = fresh.c;
+      ctx = fresh.c2;
+      y = marginPx;
+    }
+
+    function ensureSpace(need){
+      if(y + need > contentBottom) newPage();
+    }
+
+    newPage();
+
+    ctx.font = 'bold ' + (16 * scale) + 'px ' + fontStack;
+    ctx.fillText('Completed Tasks Report', marginPx, y);
+    y += 22 * scale;
+
+    ctx.font = (11 * scale) + 'px ' + fontStack;
+    ctx.fillStyle = '#6b7280';
+    ctx.fillText(document.getElementById('reportRangeLabel').textContent, marginPx, y);
+    ctx.fillStyle = '#141414';
+    y += 30 * scale;
+
+    if(!cats.length){
+      ctx.font = (12 * scale) + 'px ' + fontStack;
+      ctx.fillText('No completed tasks in this selection.', marginPx, y);
+    }
+
+    const colX = [marginPx, marginPx + 110 * scale, marginPx + 340 * scale];
+    const taskColWidth = colX[2] - colX[1] - 12 * scale;
+
+    cats.forEach(cat => {
+      const rows = completed
+        .filter(it => it.category === cat)
+        .sort((a, b) => a.completedAt.localeCompare(b.completedAt));
+
+      ensureSpace(40 * scale);
+      ctx.font = 'bold ' + (13 * scale) + 'px ' + fontStack;
+      ctx.fillText(cat + ' (' + rows.length + ')', marginPx, y);
+      y += 18 * scale;
+
+      ctx.font = 'bold ' + (9 * scale) + 'px ' + fontStack;
+      ctx.fillStyle = '#6b7280';
+      ctx.fillText('COMPLETED', colX[0], y);
+      ctx.fillText('TASK', colX[1], y);
+      ctx.fillText('PLANNED DATE', colX[2], y);
+      y += 6 * scale;
+      ctx.strokeStyle = '#dddddd';
+      ctx.lineWidth = scale;
+      ctx.beginPath(); ctx.moveTo(marginPx, y); ctx.lineTo(pageW - marginPx, y); ctx.stroke();
+      y += 16 * scale;
+
+      ctx.font = (10.5 * scale) + 'px ' + fontStack;
+      ctx.fillStyle = '#141414';
+
+      rows.forEach(it => {
+        const taskLines = wrapCanvasText(ctx, it.text, taskColWidth);
+        const rowHeight = Math.max(16 * scale, taskLines.length * 14 * scale);
+        ensureSpace(rowHeight + 8 * scale);
+
+        ctx.fillText(formatCompleted(it.completedAt), colX[0], y);
+        taskLines.forEach((line, i) => ctx.fillText(line, colX[1], y + i * 14 * scale));
+        ctx.fillText(it.dueDate ? (it.dueDate + (it.dueTime ? ' ' + it.dueTime : '')) : '—', colX[2], y);
+
+        y += rowHeight;
+        ctx.strokeStyle = '#eeeeee';
+        ctx.lineWidth = scale;
+        ctx.beginPath(); ctx.moveTo(marginPx, y - 4 * scale); ctx.lineTo(pageW - marginPx, y - 4 * scale); ctx.stroke();
+        y += 6 * scale;
+      });
+
+      y += 18 * scale;
+    });
+
+    pages.push(canvas);
+    return pages;
+  }
+
+  function generateReportPdfBlob(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pages = renderReportPages();
+    pages.forEach((canvas, i) => {
+      if(i > 0) doc.addPage();
+      doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 595, 842);
+    });
+    return doc.output('blob');
+  }
+
+  function buildReportSection(category, rows){
+    const section = document.createElement('div');
+    section.className = 'report-section';
+
+    const heading = document.createElement('h3');
+    const dot = document.createElement('span');
+    dot.className = 'cat-dot ' + categoryTagClass(category);
+    heading.appendChild(dot);
+    heading.appendChild(document.createTextNode(category + ' (' + rows.length + ')'));
+    section.appendChild(heading);
+
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'report-table-wrap';
+
+    const table = document.createElement('table');
+    table.className = 'report-table';
+    table.innerHTML = '<thead><tr><th>Completed</th><th>Task</th><th>Planned Date</th></tr></thead>';
+
+    const tbody = document.createElement('tbody');
+    rows.forEach(it => {
+      const tr = document.createElement('tr');
+
+      const tdCompleted = document.createElement('td');
+      tdCompleted.textContent = formatCompleted(it.completedAt);
+
+      const tdTask = document.createElement('td');
+      tdTask.textContent = it.text;
+
+      const tdPlanned = document.createElement('td');
+      tdPlanned.textContent = it.dueDate ? (it.dueDate + (it.dueTime ? ' ' + it.dueTime : '')) : '—';
+
+      tr.appendChild(tdCompleted);
+      tr.appendChild(tdTask);
+      tr.appendChild(tdPlanned);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    tableWrap.appendChild(table);
+    section.appendChild(tableWrap);
+    return section;
+  }
+
+  function renderReportCatFilter(cats){
+    const wrap = document.getElementById('reportCatFilter');
+    wrap.innerHTML = '';
+
+    cats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const active = !reportExcludedCats.has(cat);
+      btn.className = active ? 'active' : '';
+      const dot = document.createElement('span');
+      dot.className = 'cat-dot ' + categoryTagClass(cat);
+      btn.appendChild(dot);
+      btn.appendChild(document.createTextNode(cat));
+      btn.addEventListener('click', () => {
+        if(reportExcludedCats.has(cat)) reportExcludedCats.delete(cat);
+        else reportExcludedCats.add(cat);
+        renderReport();
+      });
+      wrap.appendChild(btn);
+    });
+
+    if(reportExcludedCats.size){
+      const resetBtn = document.createElement('button');
+      resetBtn.type = 'button';
+      resetBtn.className = 'reset';
+      resetBtn.textContent = 'Show all';
+      resetBtn.addEventListener('click', () => {
+        reportExcludedCats.clear();
+        renderReport();
+      });
+      wrap.appendChild(resetBtn);
+    }
+  }
+
+  function renderReport(){
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+
+    const rangeLabel = document.getElementById('reportRangeLabel');
+    if(from && to) rangeLabel.textContent = formatReportDate(from) + ' – ' + formatReportDate(to);
+    else if(from) rangeLabel.textContent = 'From ' + formatReportDate(from);
+    else if(to) rangeLabel.textContent = 'Through ' + formatReportDate(to);
+    else rangeLabel.textContent = 'All time';
+
+    const inRange = items.filter(it => {
+      if(!it.done || !it.completedAt) return false;
+      const d = it.completedAt.slice(0, 10);
+      if(from && d < from) return false;
+      if(to && d > to) return false;
+      return true;
+    });
+
+    const rangeCats = Array.from(new Set(inRange.map(it => it.category))).sort((a, b) => a.localeCompare(b));
+    renderReportCatFilter(rangeCats);
+
+    const completed = inRange.filter(it => !reportExcludedCats.has(it.category));
+
+    const body = document.getElementById('reportBody');
+    body.innerHTML = '';
+
+    if(!inRange.length){
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'No completed tasks in this date range.';
+      body.appendChild(empty);
+      return;
+    }
+
+    if(!completed.length){
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'No completed tasks match the selected categories.';
+      body.appendChild(empty);
+      return;
+    }
+
+    const cats = Array.from(new Set(completed.map(it => it.category))).sort((a, b) => a.localeCompare(b));
+    cats.forEach(cat => {
+      const rows = completed
+        .filter(it => it.category === cat)
+        .sort((a, b) => a.completedAt.localeCompare(b.completedAt));
+      body.appendChild(buildReportSection(cat, rows));
+    });
+  }
+
+  function buildEditForm(it){
+    const form = document.createElement('div');
+    form.className = 'edit-form';
+
+    const textInput = document.createElement('input');
+    textInput.type = 'text';
+    textInput.value = it.text;
+    textInput.required = true;
+    textInput.setAttribute('aria-label', 'Task text');
+
+    const categoryInput = document.createElement('input');
+    categoryInput.type = 'text';
+    categoryInput.id = 'editCategoryInput';
+    categoryInput.value = it.category;
+    categoryInput.setAttribute('list', 'categoryList');
+    categoryInput.setAttribute('aria-label', 'Category');
+
+    const prioritySelect = document.createElement('select');
+    prioritySelect.setAttribute('aria-label', 'Priority');
+    [['medium', 'Medium'], ['high', 'High'], ['low', 'Low']].forEach(([v, l]) => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = l;
+      if(v === it.priority) opt.selected = true;
+      prioritySelect.appendChild(opt);
+    });
+
+    const dateInput = document.createElement('input');
+    dateInput.type = 'date';
+    dateInput.value = it.dueDate || '';
+    dateInput.setAttribute('aria-label', 'Due date');
+
+    const timeInput = document.createElement('input');
+    timeInput.type = 'time';
+    timeInput.value = it.dueTime || '';
+    timeInput.setAttribute('aria-label', 'Due time');
+
+    const calendarLabel = document.createElement('label');
+    calendarLabel.className = 'calendar-check';
+    calendarLabel.title = 'Save this task as an iPhone Calendar event when you click Save';
+    const calendarCheckbox = document.createElement('input');
+    calendarCheckbox.type = 'checkbox';
+    const calendarText = document.createElement('span');
+    calendarText.textContent = '📅 Add to Calendar';
+    calendarLabel.appendChild(calendarCheckbox);
+    calendarLabel.appendChild(calendarText);
+
+    const actionsRow = document.createElement('div');
+    actionsRow.className = 'edit-actions';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.className = 'save';
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', () => {
+      const text = textInput.value.trim();
+      if(!text) return;
+      const category = categoryInput.value.trim() || DEFAULT_CATEGORY;
+      const priority = prioritySelect.value;
+      const dueDate = dateInput.value || '';
+      const dueTime = timeInput.value || '';
+      editingId = null;
+      updateItem(it.id, { text, category, priority, dueDate, dueTime });
+      if(calendarCheckbox.checked){
+        triggerAddToCalendar({ text, category, priority, dueDate, dueTime });
+      }
+    });
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'cancel';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => { editingId = null; render(); });
+
+    form.addEventListener('keydown', e => {
+      if(e.key === 'Escape'){ editingId = null; render(); }
+      if(e.key === 'Enter' && e.target.tagName !== 'SELECT'){ e.preventDefault(); saveBtn.click(); }
+    });
+
+    actionsRow.appendChild(saveBtn);
+    actionsRow.appendChild(cancelBtn);
+
+    form.appendChild(textInput);
+    form.appendChild(categoryInput);
+    form.appendChild(prioritySelect);
+    form.appendChild(dateInput);
+    form.appendChild(timeInput);
+    form.appendChild(calendarLabel);
+    form.appendChild(actionsRow);
+
+    setTimeout(() => textInput.focus(), 0);
+
+    return form;
+  }
+
+  function normalize(it){
+    if(!it.category) it.category = DEFAULT_CATEGORY;
+    if(!it.dueDate) it.dueDate = '';
+    if(!it.dueTime) it.dueTime = '';
+    if(!it.completedAt) it.completedAt = '';
+    return it;
+  }
+
+  // ---- Local storage fallback (used when the db capability is unavailable) ----
+  function loadLocal(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      items = raw ? JSON.parse(raw) : null;
+    }catch(e){ items = null; }
+    if(!items){
+      items = [
+        { id: 's1', text: 'Example: Buy groceries', priority: 'high', category: 'Personal', dueDate: '', dueTime: '', completedAt: '', done: false },
+        { id: 's2', text: 'Example: Send weekly report', priority: 'medium', category: 'Work', dueDate: todayStr(), dueTime: '17:00', completedAt: '', done: false },
+        { id: 's3', text: 'Example: Dentist appointment', priority: 'low', category: 'Health', dueDate: '', dueTime: '', completedAt: new Date().toISOString(), done: true }
+      ];
+    }
+    items.forEach(normalize);
+  }
+  function saveLocal(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }catch(e){}
+  }
+
+  // ---- CRUD (routes to db when available, else localStorage) ----
+  function addItem(text, category, priority, dueDate, dueTime){
+    const data = {
+      text, priority,
+      category: category || DEFAULT_CATEGORY,
+      dueDate: dueDate || '',
+      dueTime: dueTime || '',
+      completedAt: '',
+      done: false
+    };
+    if(dbMode){
+      db.collection('todos').add(data).catch(() => {});
+    } else {
+      items.unshift(Object.assign({ id: uid() }, data));
+      saveLocal();
+      render();
+    }
+  }
+
+  function toggleDone(id){
+    const it = items.find(i => i.id === id);
+    if(!it) return;
+    const done = !it.done;
+    const completedAt = done ? new Date().toISOString() : '';
+    if(dbMode){
+      db.collection('todos').doc(id).update({ done, completedAt }).catch(() => {});
+    } else {
+      it.done = done;
+      it.completedAt = completedAt;
+      saveLocal();
+      render();
+    }
+  }
+
+  function removeItem(id){
+    if(dbMode){
+      db.collection('todos').doc(id).delete().catch(() => {});
+    } else {
+      items = items.filter(i => i.id !== id);
+      saveLocal();
+      render();
+    }
+  }
+
+  function removeItems(ids){
+    if(dbMode){
+      ids.forEach(id => db.collection('todos').doc(id).delete().catch(() => {}));
+    } else {
+      const idSet = new Set(ids);
+      items = items.filter(i => !idSet.has(i.id));
+      saveLocal();
+      render();
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function openModal(html){
+    document.getElementById('modalBox').innerHTML = html;
+    document.getElementById('modalOverlay').hidden = false;
+  }
+
+  function closeModal(){
+    document.getElementById('modalOverlay').hidden = true;
+    document.getElementById('modalBox').innerHTML = '';
+  }
+
+  function confirmDelete(id){
+    const it = items.find(i => i.id === id);
+    if(!it) return;
+    openModal(
+      '<h3>Delete task?</h3>' +
+      '<p>&ldquo;' + escapeHtml(it.text) + '&rdquo; will be permanently deleted.</p>' +
+      '<div class="modal-actions">' +
+        '<button type="button" class="secondary" id="modalNo">No</button>' +
+        '<button type="button" class="danger" id="modalYes">Yes, delete</button>' +
+      '</div>'
+    );
+    document.getElementById('modalNo').addEventListener('click', closeModal);
+    document.getElementById('modalYes').addEventListener('click', () => {
+      removeItem(id);
+      closeModal();
+    });
+  }
+
+  function openPurgeStep1(prevFrom, prevTo){
+    const fromVal = prevFrom || '';
+    const toVal = prevTo || todayStr();
+    openModal(
+      '<h3>Purge Old Data</h3>' +
+      '<p>Delete completed tasks with a completion date in this range:</p>' +
+      '<div class="modal-daterange">' +
+        '<label>From<input type="date" id="purgeFromInput" value="' + fromVal + '"></label>' +
+        '<label>To<input type="date" id="purgeToInput" value="' + toVal + '"></label>' +
+      '</div>' +
+      '<div class="modal-actions">' +
+        '<button type="button" class="secondary" id="modalCancel">Cancel</button>' +
+        '<button type="button" class="primary" id="modalNext">Next</button>' +
+      '</div>'
+    );
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    document.getElementById('modalNext').addEventListener('click', () => {
+      const from = document.getElementById('purgeFromInput').value;
+      const to = document.getElementById('purgeToInput').value;
+      if(!from && !to) return;
+      openPurgeStep2(from, to);
+    });
+  }
+
+  function formatPurgeRange(from, to){
+    if(from && to) return 'from ' + escapeHtml(from) + ' through ' + escapeHtml(to);
+    if(from) return 'on or after ' + escapeHtml(from);
+    return 'on or before ' + escapeHtml(to);
+  }
+
+  function openPurgeStep2(from, to){
+    const toDelete = items.filter(it => {
+      if(!it.done || !it.completedAt) return false;
+      const d = it.completedAt.slice(0, 10);
+      if(from && d < from) return false;
+      if(to && d > to) return false;
+      return true;
+    });
+
+    const rangeText = formatPurgeRange(from, to);
+
+    if(!toDelete.length){
+      openModal(
+        '<h3>Nothing to purge</h3>' +
+        '<p>No completed tasks found ' + rangeText + '.</p>' +
+        '<div class="modal-actions">' +
+          '<button type="button" class="secondary" id="modalBack">Back</button>' +
+          '<button type="button" class="primary" id="modalOk">OK</button>' +
+        '</div>'
+      );
+      document.getElementById('modalBack').addEventListener('click', () => openPurgeStep1(from, to));
+      document.getElementById('modalOk').addEventListener('click', closeModal);
+      return;
+    }
+
+    openModal(
+      '<h3>Confirm purge</h3>' +
+      '<p>This will permanently delete <strong>' + toDelete.length + '</strong> completed task(s) completed ' + rangeText + '. This cannot be undone.</p>' +
+      '<div class="modal-actions">' +
+        '<button type="button" class="secondary" id="modalBack">Back</button>' +
+        '<button type="button" class="danger" id="modalConfirmPurge">Delete ' + toDelete.length + '</button>' +
+      '</div>'
+    );
+    document.getElementById('modalBack').addEventListener('click', () => openPurgeStep1(from, to));
+    document.getElementById('modalConfirmPurge').addEventListener('click', () => {
+      removeItems(toDelete.map(it => it.id));
+      closeModal();
+    });
+  }
+
+  function updateItem(id, patch){
+    if(dbMode){
+      db.collection('todos').doc(id).update(patch).catch(() => {});
+    } else {
+      const it = items.find(i => i.id === id);
+      if(it) Object.assign(it, patch);
+      saveLocal();
+      render();
+    }
+  }
+
+  async function aiParseTask(text){
+    const prompt =
+      'Today\'s date is ' + todayStr() + '. Parse this to-do into JSON only, no markdown, no preamble:\n' +
+      '"' + text + '"\n' +
+      'Return exactly: {"text": "...", "category": "Work or Personal", ' +
+      '"priority": "low|medium|high", "dueDate": "YYYY-MM-DD or empty string", "dueTime": "HH:MM 24-hour or empty string"}. ' +
+      'The "category" field must be exactly the literal string "Work" or the literal string "Personal" ' +
+      '(English, capitalized like that) — pick whichever fits best, never any other value. ' +
+      'Clean up the task text by removing the date/priority words already captured into the other fields. ' +
+      'Respond in the same language as the input for the "text" field only.';
+    return await sampleFn.json(prompt, { modelTier: 'quick' });
+  }
+
+  function normalizeAiCategory(cat){
+    const key = String(cat || '').trim().toLowerCase();
+    if(key === 'work') return 'Work';
+    return 'Personal';
+  }
+
+  document.getElementById('aiParseBtn').addEventListener('click', async function(){
+    if(!sampleFn) return;
+    const input = document.getElementById('taskInput');
+    const text = input.value.trim();
+    if(!text) return;
+
+    const btn = this;
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    try{
+      const parsed = await aiParseTask(text);
+      input.value = parsed.text || text;
+      document.getElementById('categoryInput').value = normalizeAiCategory(parsed.category);
+      document.getElementById('priorityInput').value = parsed.priority || 'medium';
+      document.getElementById('dueDateInput').value = parsed.dueDate || '';
+      document.getElementById('dueTimeInput').value = parsed.dueTime || '';
+      btn.textContent = original;
+    }catch(e){
+      console.error('AI parse failed', e);
+      if(e && e.code === 'not_granted'){
+        btn.hidden = true;
+      } else {
+        btn.textContent = '!';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      }
+    }finally{
+      btn.disabled = false;
+    }
+  });
+
+  // ---- Add task by voice (Web Speech API — on-device, no capability needed) ----
+  (function setupVoiceInput(){
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = document.getElementById('micBtn');
+    if(!SpeechRecognitionCtor) return;
+
+    const recognition = new SpeechRecognitionCtor();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = navigator.language || 'en-US';
+    let isListening = false;
+
+    recognition.addEventListener('start', () => {
+      isListening = true;
+      micBtn.classList.add('listening');
+    });
+
+    recognition.addEventListener('result', (e) => {
+      const transcript = Array.from(e.results).map(r => r[0].transcript).join(' ').trim();
+      if(!transcript) return;
+      const input = document.getElementById('taskInput');
+      input.value = input.value.trim() ? input.value.trim() + ' ' + transcript : transcript;
+    });
+
+    recognition.addEventListener('error', (e) => {
+      console.error('Speech recognition error', e.error);
+      if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+        micBtn.hidden = true;
+      }
+    });
+
+    recognition.addEventListener('end', () => {
+      isListening = false;
+      micBtn.classList.remove('listening');
+    });
+
+    micBtn.hidden = false;
+    micBtn.addEventListener('click', () => {
+      if(isListening){
+        recognition.stop();
+        return;
+      }
+      try{ recognition.start(); }catch(e){ console.error('Could not start speech recognition', e); }
+    });
+  })();
+
+  document.getElementById('addForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const input = document.getElementById('taskInput');
+    const categoryInput = document.getElementById('categoryInput');
+    const priority = document.getElementById('priorityInput').value;
+    const dueDate = document.getElementById('dueDateInput').value;
+    const dueTime = document.getElementById('dueTimeInput').value;
+    const addToCalendarInput = document.getElementById('addToCalendarInput');
+    const text = input.value.trim();
+    if(!text) return;
+    const category = categoryInput.value.trim();
+    addItem(text, category, priority, dueDate, dueTime);
+    if(addToCalendarInput.checked){
+      triggerAddToCalendar({ text, category: category || DEFAULT_CATEGORY, priority, dueDate, dueTime });
+    }
+    input.value = '';
+    categoryInput.value = '';
+    document.getElementById('dueDateInput').value = '';
+    document.getElementById('dueTimeInput').value = '';
+    addToCalendarInput.checked = false;
+    input.focus();
+  });
+
+  document.querySelectorAll('.filters button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  document.getElementById('categoryFilterSelect').addEventListener('change', function(){
+    categoryFilter = this.value;
+    render();
+  });
+
+  document.querySelectorAll('.view-switch button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.view-switch button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      viewMode = btn.dataset.view;
+      render();
+    });
+  });
+
+  document.getElementById('calPrev').addEventListener('click', () => {
+    weekStart.setDate(weekStart.getDate() - 7);
+    render();
+  });
+  document.getElementById('calNext').addEventListener('click', () => {
+    weekStart.setDate(weekStart.getDate() + 7);
+    render();
+  });
+  document.getElementById('calToday').addEventListener('click', () => {
+    weekStart = startOfWeek(new Date());
+    render();
+  });
+
+  document.getElementById('purgeBtn').addEventListener('click', openPurgeStep1);
+
+  (function initReportDefaults(){
+    const to = new Date();
+    const from = new Date();
+    from.setDate(from.getDate() - 30);
+    document.getElementById('reportFrom').value = fmtDateStr(from);
+    document.getElementById('reportTo').value = fmtDateStr(to);
+  })();
+
+  document.getElementById('dailyBriefRefresh').addEventListener('click', () => generateDailyBrief(true));
+
+  document.getElementById('reportFrom').addEventListener('change', renderReport);
+  document.getElementById('reportTo').addEventListener('change', renderReport);
+
+  document.getElementById('reportSummarizeBtn').addEventListener('click', async function(){
+    if(!sampleFn) return;
+    const btn = this;
+    const original = btn.textContent;
+
+    const stats = gatherSummaryStats();
+    if(!stats.totalCompleted){
+      openModal(
+        '<h3>Nothing to summarize</h3>' +
+        '<p>No completed tasks in the current selection.</p>' +
+        '<div class="modal-actions"><button type="button" class="primary" id="modalOk">OK</button></div>'
+      );
+      document.getElementById('modalOk').addEventListener('click', closeModal);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Thinking…';
+    try{
+      const result = await sampleFn(buildSummaryPrompt(stats), { modelTier: 'quick' });
+      openModal(
+        '<h3>Summary</h3>' +
+        '<p class="summary-text">' + escapeHtml(result.text) + '</p>' +
+        '<div class="modal-actions"><button type="button" class="primary" id="modalOk">OK</button></div>'
+      );
+      document.getElementById('modalOk').addEventListener('click', closeModal);
+    }catch(e){
+      console.error('Summarize failed', e);
+      if(e && e.code === 'not_granted'){
+        btn.hidden = true;
+      } else {
+        openModal(
+          '<h3>Couldn’t summarize</h3>' +
+          '<p>Something went wrong generating the summary. Please try again.</p>' +
+          '<div class="modal-actions"><button type="button" class="primary" id="modalOk">OK</button></div>'
+        );
+        document.getElementById('modalOk').addEventListener('click', closeModal);
+      }
+    }finally{
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+
+  document.getElementById('reportExportBtn').addEventListener('click', async function(){
+    const btn = this;
+    const original = btn.textContent;
+
+    function flash(msg, ms){
+      btn.textContent = msg;
+      setTimeout(() => { btn.textContent = original; }, ms || 2000);
+    }
+
+    if(downloadsFn){
+      btn.disabled = true;
+      btn.textContent = 'Preparing…';
+      try{
+        await ensureJsPDFLoaded();
+        const blob = generateReportPdfBlob();
+        const result = await downloadsFn.save({ filename: 'completed-tasks-report.pdf', data: blob });
+        flash(result.status === 'saved' ? 'Saved!' : 'Sent', 1500);
+      }catch(e){
+        console.error('PDF export failed', e);
+        if(e && e.code === 'declined'){
+          btn.textContent = original;
+        } else if(e && e.code === 'rate_limited'){
+          flash('Try again in a moment', 2000);
+        } else {
+          flash('Export failed', 2000);
+        }
+      }finally{
+        btn.disabled = false;
+      }
+      return;
+    }
+
+    // No downloads capability (e.g. this file opened standalone, outside
+    // the Artifact): fall back to opening a fresh window and printing it,
+    // which works fine for a normal top-level page.
+    let win = null;
+    try{ win = window.open('', '_blank'); }catch(e){ win = null; }
+
+    if(win){
+      try{
+        win.document.open();
+        win.document.write(buildPrintableReportHtml());
+        win.document.close();
+        win.focus();
+        setTimeout(() => { try{ win.print(); }catch(e){} }, 250);
+        return;
+      }catch(e){
+        try{ win.close(); }catch(e2){}
+      }
+    }
+
+    try{
+      window.print();
+    }catch(e){
+      flash('Allow pop-ups to export', 2500);
+    }
+  });
+
+  document.getElementById('modalOverlay').addEventListener('click', function(e){
+    if(e.target === this) closeModal();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !document.getElementById('modalOverlay').hidden) closeModal();
+  });
+
+  function setSyncBadge(on){
+    const badge = document.getElementById('syncBadge');
+    badge.textContent = on ? 'Synced' : 'Local only';
+    badge.className = 'sync-badge ' + (on ? 'on' : 'off');
+  }
+
+  let dataReady = false;
+  let sampleReady = false;
+
+  function maybeGenerateDailyBrief(){
+    // Only ask for a daily brief once we know BOTH that sample is
+    // available and that `items` holds the real, final data for this
+    // view (the local seed data until a db snapshot, if any, arrives) —
+    // otherwise it can summarize stale placeholder tasks instead of the
+    // viewer's actual ones.
+    if(dataReady && sampleReady && sampleFn) generateDailyBrief(false);
+  }
+
+  async function init(){
+    loadLocal();
+    render();
+
+    try{
+      if(window.claude && typeof window.claude.use === 'function'){
+        db = await window.claude.use('db');
+      }
+    }catch(e){ db = null; }
+
+    if(db){
+      dbMode = true;
+      setSyncBadge(true);
+      let firstSnapshot = true;
+      db.collection('todos').onSnapshot(function(snap){
+        items = snap.docs.map(function(d){ return normalize(Object.assign({ id: d.id }, d.data())); });
+        render();
+        if(firstSnapshot){
+          firstSnapshot = false;
+          dataReady = true;
+          maybeGenerateDailyBrief();
+        }
+      }, function(){
+        dbMode = false;
+        setSyncBadge(false);
+        loadLocal();
+        render();
+        dataReady = true;
+        maybeGenerateDailyBrief();
+      });
+    } else {
+      // No db capability: loadLocal() above already holds the final data.
+      dataReady = true;
+    }
+
+    try{
+      if(window.claude && typeof window.claude.use === 'function'){
+        sampleFn = await window.claude.use('sample');
+      }
+    }catch(e){ sampleFn = null; }
+    sampleReady = true;
+
+    if(sampleFn){
+      document.getElementById('aiParseBtn').hidden = false;
+      document.getElementById('reportSummarizeBtn').hidden = false;
+      document.getElementById('dailyBrief').hidden = false;
+      maybeGenerateDailyBrief();
+    }
+
+    try{
+      if(window.claude && typeof window.claude.use === 'function'){
+        downloadsFn = await window.claude.use('downloads');
+      }
+    }catch(e){ downloadsFn = null; }
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>
