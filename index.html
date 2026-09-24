@@ -1797,13 +1797,12 @@
     return 'Personal';
   }
 
-  document.getElementById('aiParseBtn').addEventListener('click', async function(){
+  async function runAiQuickAdd(btn){
     if(!sampleFn) return;
     const input = document.getElementById('taskInput');
     const text = input.value.trim();
     if(!text) return;
 
-    const btn = this;
     const original = btn.textContent;
     btn.disabled = true;
     btn.textContent = '…';
@@ -1827,6 +1826,20 @@
     }finally{
       btn.disabled = false;
     }
+  }
+
+  document.getElementById('aiParseBtn').addEventListener('click', function(){
+    runAiQuickAdd(this);
+  });
+
+  // Enter in the task field runs AI Quick Add (fills category/priority/date
+  // from natural language) instead of adding immediately, so the parsed
+  // fields can be reviewed before the task is actually added. Falls back to
+  // a normal add when the sample capability isn't available.
+  document.getElementById('taskInput').addEventListener('keydown', function(e){
+    if(e.key !== 'Enter' || !sampleFn) return;
+    e.preventDefault();
+    runAiQuickAdd(document.getElementById('aiParseBtn'));
   });
 
   // ---- Add task by voice (Web Speech API — on-device, no capability needed) ----
