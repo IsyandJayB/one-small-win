@@ -724,12 +724,15 @@
       + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   }
 
+  const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
+
   function compareItems(a, b){
-    const catCmp = (a.category || '').localeCompare(b.category || '');
-    if(catCmp) return catCmp;
     const ad = a.dueDate || '9999-12-31';
     const bd = b.dueDate || '9999-12-31';
     if(ad !== bd) return ad < bd ? -1 : 1;
+    const ap = PRIORITY_RANK[a.priority] ?? 1;
+    const bp = PRIORITY_RANK[b.priority] ?? 1;
+    if(ap !== bp) return ap - bp;
     const at = a.dueTime || '99:99';
     const bt = b.dueTime || '99:99';
     if(at !== bt) return at < bt ? -1 : 1;
