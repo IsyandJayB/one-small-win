@@ -1164,7 +1164,9 @@
       'Use ONLY these exact numbers per group (already computed correctly — never recompute or invent new ones):\n\n' +
       JSON.stringify(data.groups, null, 2) + '\n\n' +
       'Respond with JSON only (no markdown, no preamble), an object with exactly these keys: ' + JSON.stringify(groupKeys) + '. ' +
-      'Each value is 1-2 sentences, warm and encouraging but concise, about that group only: mention what\'s due today, any overdue items needing attention (if overdueCount > 0), ' +
+      'Each value is 1-2 sentences, warm and encouraging but concise, about that group only. Always start by stating pendingTotal as the group\'s total pending/outstanding task count ' +
+      '(pendingTotal already includes everything due today and everything overdue — they are not separate from it, so never add them to pendingTotal or present them as a different total). ' +
+      'Then mention what\'s due today, any overdue items needing attention (if overdueCount > 0), ' +
       'and what has already been completed today in that group (if completedTodayCount > 0). ' +
       'Respond in the same language as the task titles listed across all groups (Thai if mostly Thai, English otherwise); default to English if there are no titles at all — keep every group\'s text in that same language. ' +
       'No markdown, no bullet points inside the text, just plain prose per key.';
