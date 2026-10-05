@@ -111,6 +111,13 @@
     font-weight:800;margin-bottom:4px;
   }
   .daily-brief-text{font-size:13.5px;color:var(--ink);line-height:1.5;}
+  .daily-brief-sections{display:flex;flex-direction:column;gap:10px;}
+  .daily-brief-sections[hidden]{display:none;}
+  .daily-brief-section-label{
+    font-size:11px;font-weight:800;color:var(--ink);margin-bottom:2px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .daily-brief-section-text{font-size:13.5px;color:var(--ink);line-height:1.5;}
   .daily-brief-refresh{
     position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);
     font-size:16px;cursor:pointer;padding:5px 7px;border-radius:8px;
@@ -189,6 +196,7 @@
   .cat-dot.cat-5{background:var(--cat-5-bg);}
   .cat-dot.cat-personal{background:#ED9EB3;}
   .cat-dot.cat-work{background:#63C8E9;}
+  .cat-dot.cat-other{background:var(--muted);}
 
   form.add-form{
     display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;
@@ -477,6 +485,7 @@
   <div class="daily-brief" id="dailyBrief" hidden>
     <div class="daily-brief-label">✨ Daily Brief</div>
     <div class="daily-brief-text" id="dailyBriefText">Preparing your daily brief…</div>
+    <div class="daily-brief-sections" id="dailyBriefSections" hidden></div>
     <button type="button" id="dailyBriefRefresh" class="daily-brief-refresh" aria-label="Refresh daily brief" title="Refresh">↻</button>
   </div>
 
@@ -1094,6 +1103,19 @@
   }
 
   const DAILY_BRIEF_KEY = 'todo-daily-brief-v1';
+  const DAILY_BRIEF_NOTHING_PENDING = 'No pending tasks right now — enjoy the clear day!';
+  const DAILY_BRIEF_GROUPS = [
+    { key: 'work', label: 'Work', dotClass: 'cat-work' },
+    { key: 'personal', label: 'Personal', dotClass: 'cat-personal' },
+    { key: 'other', label: 'Other', dotClass: 'cat-other' }
+  ];
+
+  function dailyBriefGroupKey(category){
+    const key = (category || '').trim().toLowerCase();
+    if(key === 'work') return 'work';
+    if(key === 'personal') return 'personal';
+    return 'other';
+  }
 
   function loadDailyBriefCache(){
     try{
@@ -1102,65 +1124,125 @@
     }catch(e){ return null; }
   }
 
-  function saveDailyBriefCache(text){
-    try{ localStorage.setItem(DAILY_BRIEF_KEY, JSON.stringify({ date: todayStr(), text: text })); }catch(e){}
+  function saveDailyBriefCache(sections){
+    try{ localStorage.setItem(DAILY_BRIEF_KEY, JSON.stringify({ date: todayStr(), sections: sections })); }catch(e){}
   }
 
   function gatherDailyBriefStats(){
     const today = todayStr();
-    const dueToday = items.filter(it => !it.done && it.dueDate === today);
-    const overdue = items.filter(it => isOverdue(it));
-    const completedToday = items.filter(it => it.done && it.completedAt && it.completedAt.slice(0, 10) === today);
+    const grouped = { work: [], personal: [], other: [] };
+    items.forEach(it => { grouped[dailyBriefGroupKey(it.category)].push(it); });
 
-    return {
-      today: today,
-      pendingTotal: items.filter(it => !it.done).length,
-      dueTodayCount: dueToday.length,
-      dueTodayTitles: dueToday.slice(0, 10).map(it => it.text),
-      overdueCount: overdue.length,
-      overdueTitles: overdue.slice(0, 10).map(it => it.text),
-      completedTodayCount: completedToday.length,
-      completedTodayTitles: completedToday.slice(0, 10).map(it => it.text)
-    };
+    const groups = {};
+    DAILY_BRIEF_GROUPS.forEach(({ key }) => {
+      const groupItems = grouped[key];
+      const pendingTotal = groupItems.filter(it => !it.done).length;
+      if(!pendingTotal) return; // nothing outstanding in this group -> skip it entirely
+
+      const dueToday = groupItems.filter(it => !it.done && it.dueDate === today);
+      const overdue = groupItems.filter(it => isOverdue(it));
+      const completedToday = groupItems.filter(it => it.done && it.completedAt && it.completedAt.slice(0, 10) === today);
+
+      groups[key] = {
+        pendingTotal,
+        dueTodayCount: dueToday.length,
+        dueTodayTitles: dueToday.slice(0, 10).map(it => it.text),
+        overdueCount: overdue.length,
+        overdueTitles: overdue.slice(0, 10).map(it => it.text),
+        completedTodayCount: completedToday.length,
+        completedTodayTitles: completedToday.slice(0, 10).map(it => it.text)
+      };
+    });
+
+    return { today, groups };
   }
 
-  function buildDailyBriefPrompt(stats){
-    return 'You are writing a short daily to-do brief for the app owner, for today (' + stats.today + '). ' +
-      'Use ONLY these exact numbers (already computed correctly — never recompute or invent new ones):\n\n' +
-      JSON.stringify(stats, null, 2) + '\n\n' +
-      'Write 1-3 sentences, warm and encouraging but concise: mention what\'s due today, any overdue items needing attention (if overdueCount > 0), ' +
-      'and what has already been completed today (if completedTodayCount > 0). If dueTodayCount, overdueCount, and completedTodayCount are all 0, ' +
-      'write something brief and pleasant instead (e.g. a light, free day) rather than forcing these points in. ' +
-      'Respond in the same language as the task titles listed (Thai if mostly Thai, English otherwise); default to English if there are no titles at all. ' +
-      'No markdown, no bullet points, just plain prose.';
+  function buildDailyBriefPrompt(data){
+    const groupKeys = Object.keys(data.groups);
+    return 'You are writing a short daily to-do brief for the app owner, for today (' + data.today + '), split into separate category groups ' +
+      '("work" = the Work category, "personal" = the Personal category, "other" = every other category combined). ' +
+      'Use ONLY these exact numbers per group (already computed correctly — never recompute or invent new ones):\n\n' +
+      JSON.stringify(data.groups, null, 2) + '\n\n' +
+      'Respond with JSON only (no markdown, no preamble), an object with exactly these keys: ' + JSON.stringify(groupKeys) + '. ' +
+      'Each value is 1-2 sentences, warm and encouraging but concise, about that group only: mention what\'s due today, any overdue items needing attention (if overdueCount > 0), ' +
+      'and what has already been completed today in that group (if completedTodayCount > 0). ' +
+      'Respond in the same language as the task titles listed across all groups (Thai if mostly Thai, English otherwise); default to English if there are no titles at all — keep every group\'s text in that same language. ' +
+      'No markdown, no bullet points inside the text, just plain prose per key.';
+  }
+
+  function renderDailyBriefMessage(text){
+    document.getElementById('dailyBriefSections').hidden = true;
+    const textEl = document.getElementById('dailyBriefText');
+    textEl.hidden = false;
+    textEl.textContent = text;
+  }
+
+  function renderDailyBriefSections(sections){
+    const wrap = document.getElementById('dailyBriefSections');
+    document.getElementById('dailyBriefText').hidden = true;
+    wrap.innerHTML = '';
+
+    DAILY_BRIEF_GROUPS.forEach(({ key, label, dotClass }) => {
+      const text = sections && sections[key];
+      if(!text) return;
+
+      const section = document.createElement('div');
+      section.className = 'daily-brief-section';
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'daily-brief-section-label';
+      const dot = document.createElement('span');
+      dot.className = 'cat-dot ' + dotClass;
+      labelEl.appendChild(dot);
+      labelEl.appendChild(document.createTextNode(label));
+
+      const textEl = document.createElement('div');
+      textEl.className = 'daily-brief-section-text';
+      textEl.textContent = text;
+
+      section.appendChild(labelEl);
+      section.appendChild(textEl);
+      wrap.appendChild(section);
+    });
+
+    wrap.hidden = false;
   }
 
   async function generateDailyBrief(force){
     if(!sampleFn) return;
-    const textEl = document.getElementById('dailyBriefText');
     const refreshBtn = document.getElementById('dailyBriefRefresh');
 
     if(!force){
       const cached = loadDailyBriefCache();
       if(cached && cached.date === todayStr()){
-        textEl.textContent = cached.text;
+        if(cached.sections && Object.keys(cached.sections).length){
+          renderDailyBriefSections(cached.sections);
+        } else {
+          renderDailyBriefMessage(DAILY_BRIEF_NOTHING_PENDING);
+        }
         return;
       }
     }
 
-    textEl.textContent = 'Preparing your daily brief…';
+    const data = gatherDailyBriefStats();
+    if(!Object.keys(data.groups).length){
+      renderDailyBriefMessage(DAILY_BRIEF_NOTHING_PENDING);
+      saveDailyBriefCache({});
+      return;
+    }
+
+    renderDailyBriefMessage('Preparing your daily brief…');
     refreshBtn.disabled = true;
     try{
-      const stats = gatherDailyBriefStats();
-      const result = await sampleFn(buildDailyBriefPrompt(stats), { modelTier: 'quick' });
-      textEl.textContent = result.text;
-      saveDailyBriefCache(result.text);
+      const sections = await sampleFn.json(buildDailyBriefPrompt(data), { modelTier: 'quick' });
+      renderDailyBriefSections(sections);
+      saveDailyBriefCache(sections);
     }catch(e){
       console.error('Daily brief failed', e);
       if(e && e.code === 'not_granted'){
         document.getElementById('dailyBrief').hidden = true;
       } else {
-        textEl.textContent = 'Couldn’t generate today’s brief right now.';
+        renderDailyBriefMessage('Couldn’t generate today’s brief right now.');
       }
     }finally{
       refreshBtn.disabled = false;
