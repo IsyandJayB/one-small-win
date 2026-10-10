@@ -222,7 +222,8 @@
     background:var(--bg);color:var(--ink);font-size:13px;font-family:inherit;
     color-scheme:light dark;
   }
-  .due-group{display:flex;gap:8px;}
+  .due-group{display:flex;gap:8px;align-items:center;}
+  .due-group .time-sep{color:var(--muted);font-weight:700;flex-shrink:0;}
   form.add-form input[type=date]{flex:0 1 140px;}
   form.add-form input[type=time]{flex:0 1 110px;}
   .calendar-check{
@@ -396,7 +397,8 @@
   .cal-task.cat-bg-personal .cal-check{border-color:#4A0620;}
   .cal-task.cat-bg-work .cal-check{border-color:#082E39;}
   .cal-task.overdue-bg .cal-check{border-color:#ffffff;}
-  .cal-text{flex:1;word-break:break-word;cursor:default;}
+  .cal-text{flex:1;display:flex;flex-direction:column;gap:1px;word-break:break-word;cursor:default;}
+  .cal-time{font-weight:700;font-size:10px;font-variant-numeric:tabular-nums;opacity:0.85;}
   .cal-del{background:none;border:none;color:inherit;opacity:0.6;font-size:11px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;}
   .cal-del:hover{opacity:1;}
   .cal-empty{font-size:11px;color:var(--muted);text-align:center;padding:14px 0;}
@@ -513,7 +515,9 @@
     </select>
     <div class="due-group">
       <input type="date" id="dueDateInput" aria-label="Due date">
-      <input type="time" id="dueTimeInput" aria-label="Due time">
+      <input type="time" id="dueTimeInput" aria-label="Start time">
+      <span class="time-sep" aria-hidden="true">–</span>
+      <input type="time" id="endTimeInput" aria-label="End time">
     </div>
     <label class="calendar-check" title="Save this task as an iPhone Calendar event when you click Add">
       <input type="checkbox" id="addToCalendarInput">
@@ -644,7 +648,14 @@
     if(task.dueTime){
       const [h, mi] = task.dueTime.split(':').map(Number);
       const start = new Date(y, mo - 1, da, h, mi);
-      const end = new Date(start.getTime() + 60 * 60 * 1000); // default 1-hour block
+      let end;
+      if(task.endTime){
+        const [eh, emi] = task.endTime.split(':').map(Number);
+        end = new Date(y, mo - 1, da, eh, emi);
+        if(end <= start) end = new Date(end.getTime() + 24 * 60 * 60 * 1000); // end time past midnight
+      } else {
+        end = new Date(start.getTime() + 60 * 60 * 1000); // no end time given -> default 1-hour block
+      }
       const fmt = d => d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate())
         + 'T' + pad2(d.getHours()) + pad2(d.getMinutes()) + '00';
       dtStartLine = 'DTSTART:' + fmt(start);
@@ -723,6 +734,11 @@
     if(it.dueDate > today) return false;
     if(!it.dueTime) return false;
     return it.dueTime < nowTimeStr();
+  }
+
+  function formatTimeRange(it){
+    if(!it.dueTime) return '';
+    return it.endTime ? it.dueTime + '–' + it.endTime : it.dueTime;
   }
 
   function formatCompleted(iso){
@@ -911,7 +927,7 @@
       if(it.dueDate){
         const dTag = document.createElement('span');
         dTag.className = 'tag due' + (overdue ? ' overdue' : '');
-        dTag.textContent = it.dueDate + (it.dueTime ? ' ' + it.dueTime : '');
+        dTag.textContent = it.dueDate + (it.dueTime ? ' ' + formatTimeRange(it) : '');
         meta.appendChild(dTag);
       }
 
@@ -982,7 +998,16 @@
 
     const text = document.createElement('span');
     text.className = 'cal-text';
-    text.textContent = it.text + (it.dueTime ? ' · ' + it.dueTime : '');
+    if(it.dueTime){
+      const timeEl = document.createElement('span');
+      timeEl.className = 'cal-time';
+      timeEl.textContent = formatTimeRange(it);
+      text.appendChild(timeEl);
+    }
+    const titleEl = document.createElement('span');
+    titleEl.className = 'cal-title';
+    titleEl.textContent = it.text;
+    text.appendChild(titleEl);
 
     const del = document.createElement('button');
     del.className = 'cal-del';
@@ -1419,7 +1444,7 @@
 
         ctx.fillText(formatCompleted(it.completedAt), colX[0], y);
         taskLines.forEach((line, i) => ctx.fillText(line, colX[1], y + i * 14 * scale));
-        ctx.fillText(it.dueDate ? (it.dueDate + (it.dueTime ? ' ' + it.dueTime : '')) : '—', colX[2], y);
+        ctx.fillText(it.dueDate ? (it.dueDate + (it.dueTime ? ' ' + formatTimeRange(it) : '')) : '—', colX[2], y);
 
         y += rowHeight;
         ctx.strokeStyle = '#eeeeee';
@@ -1475,7 +1500,7 @@
       tdTask.textContent = it.text;
 
       const tdPlanned = document.createElement('td');
-      tdPlanned.textContent = it.dueDate ? (it.dueDate + (it.dueTime ? ' ' + it.dueTime : '')) : '—';
+      tdPlanned.textContent = it.dueDate ? (it.dueDate + (it.dueTime ? ' ' + formatTimeRange(it) : '')) : '—';
 
       tr.appendChild(tdCompleted);
       tr.appendChild(tdTask);
@@ -1608,7 +1633,12 @@
     const timeInput = document.createElement('input');
     timeInput.type = 'time';
     timeInput.value = it.dueTime || '';
-    timeInput.setAttribute('aria-label', 'Due time');
+    timeInput.setAttribute('aria-label', 'Start time');
+
+    const endTimeInput = document.createElement('input');
+    endTimeInput.type = 'time';
+    endTimeInput.value = it.endTime || '';
+    endTimeInput.setAttribute('aria-label', 'End time');
 
     const calendarLabel = document.createElement('label');
     calendarLabel.className = 'calendar-check';
@@ -1634,10 +1664,11 @@
       const priority = prioritySelect.value;
       const dueDate = dateInput.value || '';
       const dueTime = timeInput.value || '';
+      const endTime = endTimeInput.value || '';
       editingId = null;
-      updateItem(it.id, { text, category, priority, dueDate, dueTime });
+      updateItem(it.id, { text, category, priority, dueDate, dueTime, endTime });
       if(calendarCheckbox.checked){
-        triggerAddToCalendar({ text, category, priority, dueDate, dueTime });
+        triggerAddToCalendar({ text, category, priority, dueDate, dueTime, endTime });
       }
     });
 
@@ -1660,6 +1691,7 @@
     form.appendChild(prioritySelect);
     form.appendChild(dateInput);
     form.appendChild(timeInput);
+    form.appendChild(endTimeInput);
     form.appendChild(calendarLabel);
     form.appendChild(actionsRow);
 
@@ -1672,6 +1704,7 @@
     if(!it.category) it.category = DEFAULT_CATEGORY;
     if(!it.dueDate) it.dueDate = '';
     if(!it.dueTime) it.dueTime = '';
+    if(!it.endTime) it.endTime = '';
     if(!it.completedAt) it.completedAt = '';
     return it;
   }
@@ -1696,12 +1729,13 @@
   }
 
   // ---- CRUD (routes to db when available, else localStorage) ----
-  function addItem(text, category, priority, dueDate, dueTime){
+  function addItem(text, category, priority, dueDate, dueTime, endTime){
     const data = {
       text, priority,
       category: category || DEFAULT_CATEGORY,
       dueDate: dueDate || '',
       dueTime: dueTime || '',
+      endTime: endTime || '',
       completedAt: '',
       done: false
     };
@@ -1982,18 +2016,20 @@
     const priority = document.getElementById('priorityInput').value;
     const dueDate = document.getElementById('dueDateInput').value;
     const dueTime = document.getElementById('dueTimeInput').value;
+    const endTime = document.getElementById('endTimeInput').value;
     const addToCalendarInput = document.getElementById('addToCalendarInput');
     const text = input.value.trim();
     if(!text) return;
     const category = categoryInput.value.trim();
-    addItem(text, category, priority, dueDate, dueTime);
+    addItem(text, category, priority, dueDate, dueTime, endTime);
     if(addToCalendarInput.checked){
-      triggerAddToCalendar({ text, category: category || DEFAULT_CATEGORY, priority, dueDate, dueTime });
+      triggerAddToCalendar({ text, category: category || DEFAULT_CATEGORY, priority, dueDate, dueTime, endTime });
     }
     input.value = '';
     categoryInput.value = '';
     document.getElementById('dueDateInput').value = '';
     document.getElementById('dueTimeInput').value = '';
+    document.getElementById('endTimeInput').value = '';
     addToCalendarInput.checked = false;
     input.focus();
   });
@@ -2235,6 +2271,7 @@
   init();
 })();
 </script>
+
 
 </body>
 </html>
